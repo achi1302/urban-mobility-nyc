@@ -1,0 +1,6 @@
+pyspark
+pandas
+snowflake-connector-python
+snowflake-sqlalchemy
+python-dotenv
+findspark
