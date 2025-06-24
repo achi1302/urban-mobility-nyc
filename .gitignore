@@ -1,0 +1,35 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.egg-info/
+.eggs/
+.Python
+
+# venv
+.venv/
+env/
+ENV/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+#Temp Files
+.metastore_db/
+derby.log
+spark-warehouse/
+*.crc
+*.log
+
+# Data
+data/raw/
+data/cleaned/
+data/external/
+
+# VS Code
+.vscode/
+.history/
+
+# dotenv files (credentials)
+.env
