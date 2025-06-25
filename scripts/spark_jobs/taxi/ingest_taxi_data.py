@@ -30,6 +30,8 @@ df_sample = df.select(
     "DOLocationID"
 )
 
+df_sample.show(5, truncate=False)
+
 df_sample.write.parquet("data/cleaned/yellowtaxi_analysis_sample.parquet", mode="overwrite")
 
 spark.stop()
