@@ -12,18 +12,18 @@ spark = SparkSession.builder \
     .appName("ExploreYellowTaxi") \
     .getOrCreate()
 
-df = spark.read.parquet("data/cleaned/yellowtaxi_analysis_sample.parquet")
-df_cleaned = spark.read.parquet("data/cleaned/yellowtaxi_joined_zones.parquet")
-df_final = spark.read.parquet("data/cleaned/yellowtaxi_final.parquet")
+df = spark.read.parquet("data/cleaned/taxi/yellowtaxi_analysis_sample.parquet")
+df_joined_zones = spark.read.parquet("data/cleaned/taxi/yellowtaxi_joined_zones.parquet")
+df_final = spark.read.parquet("data/cleaned/taxi/yellowtaxi_final.parquet")
 
 print("\n Schemas:")
 df.printSchema()
-df_cleaned.printSchema()
+df_joined_zones.printSchema()
 df_final.printSchema()
 
 print("\n Sample Data:")
 df.show(5, truncate=False)
-df_cleaned.show(5, truncate=False)
+df_joined_zones.show(5, truncate=False)
 df_final.show(5, truncate=False)
 
 spark.stop()

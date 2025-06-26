@@ -12,9 +12,9 @@ spark = SparkSession.builder \
     .appName("ExploreUber") \
     .getOrCreate()
 
-df = spark.read.parquet("data/cleaned/uber_analysis_sample.parquet")
-df_joined_zones = spark.read.parquet("data/cleaned/uber_joined_zones.parquet")
-df_final = spark.read.parquet("data/cleaned/uber_final.parquet")
+df = spark.read.parquet("data/cleaned/uber/uber_analysis_sample.parquet")
+df_joined_zones = spark.read.parquet("data/cleaned/uber/uber_joined_zones.parquet")
+df_final = spark.read.parquet("data/cleaned/uber/uber_final.parquet")
 
 print("\n Schemas:")
 df.printSchema()
@@ -22,9 +22,9 @@ df_joined_zones.printSchema()
 df_final.printSchema()
 
 print("\n Sample Data:")
-df.orderBy("pickup_datetime").show(5, truncate=False)
-df_joined_zones.orderBy("pickup_datetime").show(5, truncate=False)
-df_final.orderBy("pickup_datetime").show(5, truncate=False)
+df.show(5, truncate=False)
+df_joined_zones.show(5, truncate=False)
+df_final.show(5, truncate=False)
 
 
 spark.stop()
