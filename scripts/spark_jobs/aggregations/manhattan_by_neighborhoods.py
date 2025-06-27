@@ -15,7 +15,7 @@ spark = SparkSession.builder \
 df = spark.read.parquet("data/cleaned/manhattan_trips.parquet")
 
 # Aggregate by PickupZone and Provider
-aggregated_df = df.groupBy("PUZone", "provider").agg(
+aggregated_df = df.groupBy("PURegion", "PUZone", "provider").agg(
     count("*").alias("trip_count"),
     round(avg("trip_distance"), 2).alias("avg_trip_distance"),
     round(avg("fare_amount"), 2).alias("avg_fare_amount")
@@ -27,7 +27,17 @@ aggregated_df = aggregated_df.withColumn(
     round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
 )
 
+region_summary = df.groupBy("PURegion","Provider").agg(
+    count("*").alias("total_trips"),
+    round(avg("trip_distance"), 2).alias("avg_trip_distance"),
+    round(avg("fare_amount"), 2).alias("avg_fare_amount")
+).withColumn(
+    "fare_per_mile",
+    round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
+)
 
-aggregated_df.orderBy("PUZone", "provider").show(30, truncate=False)
+aggregated_df.orderBy("PURegion", "PUZone", "provider").show(50, truncate=False)
+
+region_summary.orderBy("PURegion", "Provider").show(truncate=False)
 
 spark.stop()
