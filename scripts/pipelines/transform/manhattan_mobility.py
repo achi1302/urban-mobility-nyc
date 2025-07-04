@@ -7,14 +7,14 @@ os.environ["SPARK_HOME"] = "C:\\spark\\spark-3.5.5-bin-hadoop3"
 findspark.init()
 
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, lit, udf
+from pyspark.sql.functions import col, lit, udf, count, avg, round
 from pyspark.sql.types import StringType
 
 spark = SparkSession.builder \
     .appName("ManhattanTrips") \
     .getOrCreate()
 
-# STEP 1: Classify Zones
+# CLASSIFY ZONES
 gpdf = gpd.read_file("data/external/taxi_zones/taxi_zones.shp")
 gpdf["centroid_proj"] = gpdf.geometry.centroid
 
@@ -44,7 +44,7 @@ mv_hs_override = {
 manhattan_gpdf["region"] = manhattan_gpdf.apply(
     lambda row: mv_hs_override.get(row["zone"], row["region"]), axis=1
 )
-print(manhattan_gpdf.sort_values(by="lat")[["zone", "lat", "lon", "region"]])
+#print(manhattan_gpdf.sort_values(by="lat")[["zone", "lat", "lon", "region"]])
 
 # Zone to Region Map
 zone_region_map = manhattan_gpdf.set_index("zone")["region"].to_dict()
@@ -55,7 +55,7 @@ zone_region_map_bc = spark.sparkContext.broadcast(zone_region_map)
 def map_zone_to_region(zone):
     return zone_region_map_bc.value.get(zone, "Unknown")
 
-# STEP 2: Read and Transform
+# READ AND TRANSFORM
 # Taxi
 taxi_df = spark.read.parquet("data/cleaned/taxi/yellowtaxi_final.parquet") \
     .withColumn("provider", lit("taxi"))
@@ -76,10 +76,10 @@ columns = [
     "PUBorough", "PUZone", "DOBorough", "DOZone", "provider"
 ]
 
-df = taxi_df.select(columns).unionByName(uber_df.select(columns))
+df_taxi_uber = taxi_df.select(columns).unionByName(uber_df.select(columns))
 
 target_neighborhoods = list(zone_region_map.keys())
-df = df.filter(
+df_taxi_uber = df_taxi_uber.filter(
     (col("PUBorough") == "Manhattan") &
     (col("DOBorough") == "Manhattan") &
     (col("PUZone").isin(target_neighborhoods)) &
@@ -92,14 +92,39 @@ df = df.filter(
     (col("DOZone") != "Roosevelt Island")
 )
 
-df = df.withColumn("PURegion", map_zone_to_region(col("PUZone")))
-df = df.withColumn("DORegion", map_zone_to_region(col("DOZone")))
+df_taxi_uber = df_taxi_uber.withColumn("PURegion", map_zone_to_region(col("PUZone")))
+df_taxi_uber = df_taxi_uber.withColumn("DORegion", map_zone_to_region(col("DOZone")))
 
-#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider", "fare_amount", "trip_distance").orderBy("PUZone").show(10, truncate=False)
-#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider").where(col("PUZone") == "Manhattan Valley").show(10, truncate=False)
-#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider").where(col("PUZone") == "East Harlem North").show(10, truncate=False)
+df_taxi_uber.show(10, truncate=False)
 
-df.write.parquet("data/cleaned/manhattan_trips.parquet", mode="overwrite")
+# AGGREGATE AND FILTER
+zone_summary = df_taxi_uber.groupBy("PURegion", "PUZone", "provider").agg(
+    count("*").alias("trip_count"),
+    round(avg("trip_distance"), 2).alias("avg_trip_distance"),
+    round(avg("fare_amount"), 2).alias("avg_fare_amount")
+).withColumn( #FarePerMile
+    "fare_per_mile",
+    round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
+)
+
+region_summary = df_taxi_uber.groupBy("PURegion","Provider").agg(
+    count("*").alias("total_trips"),
+    round(avg("trip_distance"), 2).alias("avg_trip_distance"),
+    round(avg("fare_amount"), 2).alias("avg_fare_amount")
+).withColumn(
+    "fare_per_mile",
+    round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
+)
+
+census_df = spark.read.csv("data/cleaned/manhattan_region_census.csv", header=True, inferSchema=True)
+
+region_summary_census = region_summary.join(census_df, on="PURegion", how="left")
+
+zone_summary.orderBy("PURegion", "PUZone", "provider").show(10, truncate=False)
+region_summary.orderBy("PURegion", "provider").show(10, truncate=False)
+region_summary_census.orderBy("PURegion", "provider").show(10, truncate=False)
+
+#region_summary_census.write.parquet("data/outputs/manhattan_mobility_by_region.parquet", mode="overwrite")
 
 spark.stop()
 
