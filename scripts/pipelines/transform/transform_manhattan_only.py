@@ -25,17 +25,26 @@ gpdf["lat"] = gpdf.geometry.y
 gpdf["lon"] = gpdf.geometry.x
 
 manhattan_gpdf = gpdf[gpdf["borough"] == "Manhattan"].copy()
-
 def assign_region(lat):
-    if lat < 40.736824: # Custom Margins
+    if lat < 40.736823: # Custom Margins
         return "Lower Manhattan"
-    elif 40.736824 < lat < 40.7697680:
+    elif lat < 40.801169:
         return "Midtown Manhattan"
-    elif  40.7697680 < lat < 40.876994:
+    elif lat < 40.876994:
         return "Upper Manhattan"
     return "Unknown"
 
 manhattan_gpdf["region"] = manhattan_gpdf["lat"].apply(assign_region)
+
+# Manual Overrides for Manhattan Valley and East Harlem South
+mv_hs_override = {
+    "Manhattan Valley": "Upper Manhattan",
+    "East Harlem South": "Upper Manhattan"
+}
+manhattan_gpdf["region"] = manhattan_gpdf.apply(
+    lambda row: mv_hs_override.get(row["zone"], row["region"]), axis=1
+)
+print(manhattan_gpdf.sort_values(by="lat")[["zone", "lat", "lon", "region"]])
 
 # Zone to Region Map
 zone_region_map = manhattan_gpdf.set_index("zone")["region"].to_dict()
@@ -76,13 +85,19 @@ df = df.filter(
     (col("PUZone").isin(target_neighborhoods)) &
     (col("DOZone").isin(target_neighborhoods)) &
     (col("PUZone") != "Governor's Island/Ellis Island/Liberty Island") &
-    (col("DOZone") != "Governor's Island/Ellis Island/Liberty Island")
+    (col("DOZone") != "Governor's Island/Ellis Island/Liberty Island") &
+    (col("PUZone") != "Randalls Island") &
+    (col("DOZone") != "Randalls Island") & 
+    (col("PUZone") != "Roosevelt Island") &
+    (col("DOZone") != "Roosevelt Island")
 )
 
 df = df.withColumn("PURegion", map_zone_to_region(col("PUZone")))
 df = df.withColumn("DORegion", map_zone_to_region(col("DOZone")))
 
-df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider", "fare_amount", "trip_distance").show(10, truncate=False)
+#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider", "fare_amount", "trip_distance").orderBy("PUZone").show(10, truncate=False)
+#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider").where(col("PUZone") == "Manhattan Valley").show(10, truncate=False)
+#df.select("PUZone", "PURegion", "DOZone", "DORegion", "provider").where(col("PUZone") == "East Harlem North").show(10, truncate=False)
 
 df.write.parquet("data/cleaned/manhattan_trips.parquet", mode="overwrite")
 
