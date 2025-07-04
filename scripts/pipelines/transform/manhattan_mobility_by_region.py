@@ -9,7 +9,7 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, avg, count, round, first
 
 spark = SparkSession.builder \
-    .appName("ManhattanByNeighborhoods") \
+    .appName("ManhattanByRegions") \
     .getOrCreate()
 
 df = spark.read.parquet("data/cleaned/manhattan_trips.parquet")
@@ -52,10 +52,18 @@ trip_diferential = rename.withColumn(
     col("total_trips_uber") - col("total_trips_taxi")
 )
 
+census_df = spark.read.csv("data/cleaned/manhattan_region_census.csv", header=True, inferSchema=True)
+
+region_summary_joined = region_summary.join(census_df, on="PURegion", how="left")
+
+
 aggregated_df.orderBy("PURegion", "PUZone", "provider").show(10, truncate=False)
 
-region_summary.orderBy("PURegion", "Provider").show(truncate=False)
-
 trip_diferential.orderBy("PURegion").show(truncate=False)
+
+region_summary_joined.orderBy("PURegion", "Provider").show(truncate=False)
+
+region_summary_joined.coalesce(1).write.option("header", True).mode("overwrite").csv("data/outputs/manhattan_mobility_by_region_csv")
+region_summary_joined.write.mode("overwrite").parquet("data/outputs/manhattan_mobility_by_region.parquet")
 
 spark.stop()

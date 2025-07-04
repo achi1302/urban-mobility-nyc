@@ -1,0 +1,7 @@
+PURegion,Provider,total_trips,avg_trip_distance,avg_fare_amount,fare_per_mile,aprox_property_value,population_density
+Midtown Manhattan,taxi,2073132,1.77,12.82,7.24,1208381,90102
+Lower Manhattan,taxi,451356,2.24,14.51,6.48,1211205,73433
+Upper Manhattan,taxi,76264,2.9,13.93,4.8,721049,72498
+Lower Manhattan,uber,1012148,2.63,26.02,9.89,1211205,73433
+Upper Manhattan,uber,535201,3.09,19.3,6.25,721049,72498
+Midtown Manhattan,uber,2024926,2.35,24.64,10.49,1208381,90102
