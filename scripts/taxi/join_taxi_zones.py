@@ -35,7 +35,7 @@ df = df.join(
 )
 
 # Preview
-df_sample = df.select(
+filtered_df = df.select(
     "tpep_pickup_datetime",
     "tpep_dropoff_datetime",
     "passenger_count",
@@ -48,10 +48,10 @@ df_sample = df.select(
     "DOZone"
 )
 
-df_sample.show(10, truncate=False)
+filtered_df.show(10, truncate=False)
 
 # Save
-df_sample.write.parquet("data/cleaned/yellowtaxi_joined_zones.parquet", mode="overwrite")
+filtered_df.write.parquet("data/cleaned/yellowtaxi_joined_zones.parquet", mode="overwrite")
 
 spark.stop()
 

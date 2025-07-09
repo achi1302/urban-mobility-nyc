@@ -35,7 +35,7 @@ df = df.join(
 )
 
 # Preview
-df_sample = df.select(
+filtered_df = df.select(
     "hvfhs_license_num",
     "pickup_datetime",
     "dropoff_datetime",
@@ -47,8 +47,8 @@ df_sample = df.select(
     "DOZone"
 )
 
-df_sample.show(5, truncate=False)
+filtered_df.show(5, truncate=False)
 
-df_sample.write.parquet("data/cleaned/uber_joined_zones.parquet", mode="overwrite")
+filtered_df.write.parquet("data/cleaned/uber_joined_zones.parquet", mode="overwrite")
 
 spark.stop()
