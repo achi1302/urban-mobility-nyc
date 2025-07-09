@@ -26,6 +26,7 @@ spark-warehouse/
 data/raw/
 data/cleaned/
 data/external/
+data/outputs/
 
 # VS Code
 .vscode/
