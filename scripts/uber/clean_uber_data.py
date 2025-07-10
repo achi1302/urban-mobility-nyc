@@ -8,11 +8,18 @@ findspark.init()
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when
 
+# Increased Memory
 spark = SparkSession.builder \
     .appName("CleanUberData") \
-    .getOrCreate() 
+    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.sql.shuffle.partitions", "8") \
+    .getOrCreate()
 
-df = spark.read.parquet("data/cleaned/uber_joined_zones.parquet")
+YEAR = "2023" #Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/uber/uber_tripdata_ultimate_{YEAR}.parquet"
+
+df = spark.read.parquet(f"data/cleaned/{YEAR}/uber/uber_tripdata_uberzones_{YEAR}.parquet")
 
 requiered_columns = [
     "hvfhs_license_num",
@@ -38,8 +45,11 @@ df_clean = df_clean.withColumn(
     when(col("hvfhs_license_num") == "HV0003", "Uber")
 )
 
-df_clean.show(5, truncate=False)
+df_clean.printSchema()
+df_clean.show(10, truncate=False)
 
-df_clean.write.parquet("data/cleaned/uber_final.parquet", mode="overwrite")
+df_clean.write.parquet(OUTPUT_PATH, mode="overwrite")
+
+print("Uber Data Cleaned!")
 
 spark.stop()

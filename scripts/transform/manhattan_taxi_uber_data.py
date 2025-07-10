@@ -10,14 +10,20 @@ from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, lit, udf, count, avg, round
 from pyspark.sql.types import StringType
 
+# Increased Memory
 spark = SparkSession.builder \
-    .appName("ManhattanTrips") \
+    .appName("ManhattanTaxiUberData") \
+    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.sql.shuffle.partitions", "8") \
     .getOrCreate()
+
+YEAR = "2023" #Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/manhattan_taxi_uber_tripdata_{YEAR}.parquet"
 
 # CLASSIFY ZONES
 gpdf = gpd.read_file("data/external/taxi_regions/taxi_zones.shp")
 gpdf["centroid_proj"] = gpdf.geometry.centroid
-
 
 gpdf = gpdf.set_geometry("centroid_proj")
 gpdf = gpdf.set_crs(gpdf.crs).to_crs(epsg=4326)
@@ -56,27 +62,7 @@ def map_zone_to_region(zone):
     return zone_region_map_bc.value.get(zone, "Unknown")
 
 # READ AND TRANSFORM
-# Taxi
-taxi_df = spark.read.parquet("data/cleaned/taxi/yellowtaxi_final.parquet") \
-    .withColumn("provider", lit("taxi"))
-
-# Uber Reformat
-uber_df = spark.read.parquet("data/cleaned/uber/uber_final.parquet") \
-    .withColumn("provider", lit("uber")) \
-    .withColumnRenamed("pickup_datetime", "tpep_pickup_datetime") \
-    .withColumnRenamed("dropoff_datetime", "tpep_dropoff_datetime") \
-    .withColumnRenamed("trip_miles", "trip_distance") \
-    .withColumnRenamed("base_passenger_fare", "fare_amount") \
-    .withColumn("passenger_count", lit(None).cast("long")) \
-    .withColumn("payment_type", lit(None).cast("string")) \
-
-columns = [
-    "tpep_pickup_datetime", "tpep_dropoff_datetime", "passenger_count",
-    "trip_distance", "fare_amount", "payment_type",
-    "PUBorough", "PUZone", "DOBorough", "DOZone", "provider"
-]
-
-df_taxi_uber = taxi_df.select(columns).unionByName(uber_df.select(columns))
+df_taxi_uber = spark.read.parquet(f"data/cleaned/{YEAR}/taxi_uber_tripdata_{YEAR}.parquet")
 
 target_neighborhoods = list(zone_region_map.keys())
 df_taxi_uber = df_taxi_uber.filter(
@@ -95,10 +81,10 @@ df_taxi_uber = df_taxi_uber.filter(
 df_taxi_uber = df_taxi_uber.withColumn("PURegion", map_zone_to_region(col("PUZone")))
 df_taxi_uber = df_taxi_uber.withColumn("DORegion", map_zone_to_region(col("DOZone")))
 
-df_taxi_uber.show(10, truncate=False)
+df_taxi_uber.show(5, truncate=False)
 
 # AGGREGATE AND FILTER
-zone_summary = df_taxi_uber.groupBy("PURegion", "PUZone", "provider").agg(
+df_taxi_uber_zone_summary = df_taxi_uber.groupBy("PURegion", "PUZone", "provider").agg(
     count("*").alias("trip_count"),
     round(avg("trip_distance"), 2).alias("avg_trip_distance"),
     round(avg("fare_amount"), 2).alias("avg_fare_amount")
@@ -107,7 +93,7 @@ zone_summary = df_taxi_uber.groupBy("PURegion", "PUZone", "provider").agg(
     round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
 )
 
-region_summary = df_taxi_uber.groupBy("PURegion","Provider").agg(
+df_taxi_uber_region_summary = df_taxi_uber.groupBy("PURegion","Provider").agg(
     count("*").alias("total_trips"),
     round(avg("trip_distance"), 2).alias("avg_trip_distance"),
     round(avg("fare_amount"), 2).alias("avg_fare_amount")
@@ -116,16 +102,8 @@ region_summary = df_taxi_uber.groupBy("PURegion","Provider").agg(
     round(col("avg_fare_amount") / col("avg_trip_distance"), 2)
 )
 
-census_df = spark.read.csv("data/cleaned/manhattan_region_census.csv", header=True, inferSchema=True)
-
-region_summary_census = region_summary.join(census_df, on="PURegion", how="left")
-
-zone_summary.orderBy("PURegion", "PUZone", "provider").show(10, truncate=False)
-region_summary.orderBy("PURegion", "provider").show(10, truncate=False)
-region_summary_census.orderBy("PURegion", "provider").show(10, truncate=False)
-
-#region_summary_census.write.parquet("data/outputs/manhattan_mobility_by_region.parquet", mode="overwrite")
+df_taxi_uber_zone_summary.orderBy("PURegion", "PUZone", "provider").show(5, truncate=False)
+df_taxi_uber_region_summary.orderBy("PURegion", "provider").show(truncate=False)
 
 spark.stop()
-
 

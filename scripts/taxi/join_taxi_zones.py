@@ -8,11 +8,18 @@ findspark.init()
 
 from pyspark.sql import SparkSession
 
+# Increased Memory
 spark = SparkSession.builder \
     .appName("JoinTaxiZones") \
+    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.sql.shuffle.partitions", "8") \
     .getOrCreate()
 
-df = spark.read.parquet("data/cleaned/yellowtaxi_analysis_sample.parquet")
+YEAR = "2023" #Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_taxizones_{YEAR}.parquet"
+
+df = spark.read.parquet(f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_filtered_{YEAR}.parquet")
 
 df_zones = spark.read.csv("data/external/taxi+_zone_lookup.csv", header=True)
 
@@ -35,7 +42,7 @@ df = df.join(
 )
 
 # Preview
-filtered_df = df.select(
+joined_df = df.select(
     "tpep_pickup_datetime",
     "tpep_dropoff_datetime",
     "passenger_count",
@@ -48,10 +55,13 @@ filtered_df = df.select(
     "DOZone"
 )
 
-filtered_df.show(10, truncate=False)
+joined_df.printSchema()
+joined_df.show(10, truncate=False)
 
 # Save
-filtered_df.write.parquet("data/cleaned/yellowtaxi_joined_zones.parquet", mode="overwrite")
+joined_df.write.parquet(OUTPUT_PATH, mode="overwrite")
+
+print("Taxi Zones Joined!")
 
 spark.stop()
 

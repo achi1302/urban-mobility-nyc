@@ -18,6 +18,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 YEAR = "2023" # Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/uber/uber_tripdata_filtered_{YEAR}.parquet"
 
 df = spark.read.parquet(f"data/raw/{YEAR}/uber/uber_tripdata_{YEAR}.parquet")
 
@@ -29,7 +30,7 @@ df.printSchema()
 df.show(5, truncate=False)
 
 # Analysis Columns
-filtered_df = df.select(
+joined_df = df.select(
     "hvfhs_license_num",
     "pickup_datetime",
     "dropoff_datetime",
@@ -39,10 +40,10 @@ filtered_df = df.select(
     "DOLocationID"
 )
 
-filtered_df.printSchema()
-filtered_df.show(5, truncate=False)
+joined_df.printSchema()
+joined_df.show(5, truncate=False)
 
-filtered_df.write.parquet(f"data/cleaned/{YEAR}/uber/uber_tripdata_filtered_{YEAR}", mode="overwrite")
+joined_df.write.parquet(OUTPUT_PATH, mode="overwrite")
 
 print("Uber data filtered!")
 

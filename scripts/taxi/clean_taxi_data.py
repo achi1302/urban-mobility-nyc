@@ -8,11 +8,18 @@ findspark.init()
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col, when
 
+# Increased Memory
 spark = SparkSession.builder \
     .appName("CleanTaxiData") \
-    .getOrCreate() 
+    .config("spark.driver.memory", "8g") \
+    .config("spark.executor.memory", "4g") \
+    .config("spark.sql.shuffle.partitions", "8") \
+    .getOrCreate()
 
-df = spark.read.parquet("data/cleaned/yellowtaxi_joined_zones.parquet")
+YEAR = "2023" #Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_ultimate_{YEAR}.parquet"
+
+df = spark.read.parquet(f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_taxizones_{YEAR}.parquet")
 
 requiered_columns = [
     "tpep_pickup_datetime", "tpep_dropoff_datetime",
@@ -40,9 +47,11 @@ df_clean = df_clean.withColumn(
     .otherwise("Other")
 )
 
-
+df_clean.printSchema()
 df_clean.show(10, truncate=False)
 
-df_clean.write.parquet("data/cleaned/yellowtaxi_final.parquet", mode="overwrite")
+df_clean.write.parquet(OUTPUT_PATH, mode="overwrite")
+
+print("Taxi Data Cleaned!")
 
 spark.stop()

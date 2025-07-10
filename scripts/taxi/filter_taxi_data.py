@@ -6,7 +6,6 @@ os.environ["SPARK_HOME"] = "C:\\spark\\spark-3.5.5-bin-hadoop3"
 
 findspark.init()
 
-
 from pyspark.sql import SparkSession
 
 # Increased Memory
@@ -18,6 +17,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 YEAR = "2023" # Change Year
+OUTPUT_PATH = f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_filtered_{YEAR}.parquet"
 
 df = spark.read.parquet(f"data/raw/{YEAR}/taxi/yellowtaxi_tripdata_{YEAR}.parquet")
 
@@ -25,7 +25,7 @@ df.printSchema()
 df.show(5, truncate=False)
 
 # Analysis Columns
-filtered_df = df.select(
+joined_df = df.select(
     "tpep_pickup_datetime",
     "tpep_dropoff_datetime",
     "passenger_count",
@@ -36,10 +36,10 @@ filtered_df = df.select(
     "DOLocationID"
 )
 
-filtered_df.printSchema()
-filtered_df.show(5, truncate=False)
+joined_df.printSchema()
+joined_df.show(5, truncate=False)
 
-filtered_df.write.parquet(f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_filtered_{YEAR}.parquet", mode="overwrite")
+joined_df.write.parquet(OUTPUT_PATH, mode="overwrite")
 
 print("Taxi data filtered!")
 
