@@ -41,7 +41,7 @@ def calculate_region_data(region_name, subregions):
 # CSV CREATION
 output_file = [calculate_region_data(region, data) for region, data in regions_data.items()]
 
-with open("data/external/manhattan_region_census.csv", "w", newline="") as csvfile:
+with open("data/cleaned/2023/manhattan_region_census_2023.csv", "w", newline="") as csvfile:
     fieldnames = ["PURegion", "aprox_property_value", "population_density"]
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
