@@ -22,7 +22,18 @@ spark = SparkSession.builder \
         .config("spark.driver.extraClassPath", jar_path) \
         .getOrCreate()
 
-df = spark.read.parquet("data/outputs/manhattan_mobility_by_region.parquet")
+YEAR = "2023" #Change Year
+
+ZONE_SUMMARY = f"data/outputs/{YEAR}/manhattan_zone_summary_{YEAR}.parquet"
+REGION_SUMMARY = f"data/outputs/{YEAR}/manhattan_region_summary_{YEAR}.parquet"
+MONTHLY_REGION_TRENDS = f"data/outputs/{YEAR}/manhattan_monthly_region_trends_{YEAR}.parquet"
+HOURLY_TRENDS = f"data/outputs/{YEAR}/manhattan_hourly_trends_{YEAR}.parquet"
+PROVIDER_SUMMARY = f"data/outputs/{YEAR}/manhattan_provider_summary_{YEAR}.parquet"
+PROVIDER_PREFERENCE_BY_WEALTH = f"data/outputs/{YEAR}/manhattan_provider_preference_by_wealth_{YEAR}.parquet"
+PAYMENT_TYPE_SUMMARY = f"data/outputs/{YEAR}/manhattan_payment_type_{YEAR}.parquet"
+FARE_PER_MILE_VS_PROPERTY_VALUE = f"data/outputs/{YEAR}/manhattan_fare_per_mile_vs_property_value_{YEAR}.parquet"
+POP_DENSITY_VS_TRIP_VOLUME = f"data/outputs/{YEAR}/manhattan_population_density_vs_trip_volume_{YEAR}.parquet"
+df = spark.read.parquet(POP_DENSITY_VS_TRIP_VOLUME)
 
 sfOptions = {
     "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
@@ -37,10 +48,10 @@ sfOptions = {
 df.write \
         .format("snowflake") \
         .options(**sfOptions) \
-        .option("dbtable", "MANHATTAN_MOBILITY_BY_REGION") \
+        .option("dbtable", "MANHATTAN_POP_DENSITY_VS_TRIP_VOLUME") \
         .mode("overwrite") \
         .save()
-
+#CHANGE TABLE NAME
 print("Data loaded!")
 
 spark.stop()
