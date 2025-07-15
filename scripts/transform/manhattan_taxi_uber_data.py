@@ -8,7 +8,7 @@ findspark.init()
 
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import col,  udf, year
-from pyspark.sql.types import StringType
+from pyspark.sql.types import StringType, DoubleType
 
 # Increased Memory
 spark = SparkSession.builder \
@@ -56,10 +56,24 @@ manhattan_gpdf["region"] = manhattan_gpdf.apply(
 zone_region_map = manhattan_gpdf.set_index("zone")["region"].to_dict()
 zone_region_map_bc = spark.sparkContext.broadcast(zone_region_map)
 
+# Zone to Lat/Lon Maps
+zone_lat_map = manhattan_gpdf.set_index("zone")["lat"].to_dict()
+zone_lon_map = manhattan_gpdf.set_index("zone")["lon"].to_dict()
+zone_lat_map_bc = spark.sparkContext.broadcast(zone_lat_map)
+zone_lon_map_bc = spark.sparkContext.broadcast(zone_lon_map)
+
 # PUZone to PURegion
 @udf(StringType())
 def map_zone_to_region(zone):
     return zone_region_map_bc.value.get(zone, "Unknown")
+
+@udf(DoubleType())
+def map_zone_to_lat(zone):
+    return zone_lat_map_bc.value.get(zone, None)
+
+@udf(DoubleType())
+def map_zone_to_lon(zone):
+    return zone_lon_map_bc.value.get(zone, None)
 
 # READ AND TRANSFORM
 df_taxi_uber = spark.read.parquet(f"data/cleaned/{YEAR}/taxi_uber_tripdata_{YEAR}.parquet")
@@ -82,6 +96,11 @@ df_taxi_uber = df_taxi_uber.filter(
 
 df_taxi_uber = df_taxi_uber.withColumn("PURegion", map_zone_to_region(col("PUZone")))
 df_taxi_uber = df_taxi_uber.withColumn("DORegion", map_zone_to_region(col("DOZone")))
+
+df_taxi_uber = df_taxi_uber.withColumn("PULat", map_zone_to_lat(col("PUZone")))
+df_taxi_uber = df_taxi_uber.withColumn("PULon", map_zone_to_lon(col("PUZone")))
+df_taxi_uber = df_taxi_uber.withColumn("DOLat", map_zone_to_lat(col("PUZone")))
+df_taxi_uber = df_taxi_uber.withColumn("DOLon", map_zone_to_lon(col("PUZone")))
 
 print("\n Preview:")
 df_taxi_uber.show(10, truncate=False)

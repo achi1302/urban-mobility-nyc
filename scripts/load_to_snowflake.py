@@ -33,7 +33,7 @@ PROVIDER_PREFERENCE_BY_WEALTH = f"data/outputs/{YEAR}/manhattan_provider_prefere
 PAYMENT_TYPE_SUMMARY = f"data/outputs/{YEAR}/manhattan_payment_type_{YEAR}.parquet"
 FARE_PER_MILE_VS_PROPERTY_VALUE = f"data/outputs/{YEAR}/manhattan_fare_per_mile_vs_property_value_{YEAR}.parquet"
 POP_DENSITY_VS_TRIP_VOLUME = f"data/outputs/{YEAR}/manhattan_population_density_vs_trip_volume_{YEAR}.parquet"
-df = spark.read.parquet(POP_DENSITY_VS_TRIP_VOLUME)
+df = spark.read.parquet(ZONE_SUMMARY)
 
 sfOptions = {
     "sfURL": f"{os.getenv('SNOWFLAKE_ACCOUNT')}.snowflakecomputing.com",
@@ -48,7 +48,7 @@ sfOptions = {
 df.write \
         .format("snowflake") \
         .options(**sfOptions) \
-        .option("dbtable", "MANHATTAN_POP_DENSITY_VS_TRIP_VOLUME") \
+        .option("dbtable", "MANHATTAN_ZONE_SUMMARY") \
         .mode("overwrite") \
         .save()
 #CHANGE TABLE NAME

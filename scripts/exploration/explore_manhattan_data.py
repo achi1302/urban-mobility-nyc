@@ -7,6 +7,7 @@ os.environ["SPARK_HOME"] = "C:\\spark\\spark-3.5.5-bin-hadoop3"
 findspark.init()
 
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import col
 
 spark = SparkSession.builder \
     .appName("ExploreManhattanData") \
@@ -30,7 +31,7 @@ df.show(10, truncate=False)
 df_manhattan.show(10, truncate=False)
 
 print("\n Zone Summary:")
-df_manhattan_zone_summary.orderBy("PURegion", "PUZone", "provider").show(10, truncate=False)
+df_manhattan_zone_summary.orderBy("PURegion", "PUZone", "provider").filter(col("PUZone") == "Upper West Side North").show(10, truncate=False)
 
 print("\n Provider Summary:")
 df_manhattan_provider_summary.show(truncate=False)

@@ -23,7 +23,7 @@ df = spark.read.parquet(f"data/cleaned/{YEAR}/manhattan_taxi_uber_tripdata_{YEAR
 census_df = spark.read.csv(f"data/cleaned/{YEAR}/manhattan_region_census_{YEAR}.csv", header=True, inferSchema=True)
 
 # BI READY TABLES
-df_zone_summary = df.groupBy("PURegion", "PUZone", "provider").agg(
+df_zone_summary = df.groupBy("PURegion", "PUZone", "PULat", "PULon", "provider").agg(
     count("*").alias("trip_count"),
     round(avg("trip_distance"), 2).alias("avg_trip_distance"),
     round(avg("fare_amount"), 2).alias("avg_fare_amount")
