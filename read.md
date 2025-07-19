@@ -100,7 +100,7 @@ cp .env .env  # then fill values
 
 ## 📊 Dashboards Preview
 
-TODO: add GIF / screenshots once Power BI file is published.
+
 
 ---
 
