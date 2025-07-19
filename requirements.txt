@@ -4,3 +4,4 @@ snowflake-connector-python
 snowflake-sqlalchemy
 python-dotenv
 findspark
+geopandas
