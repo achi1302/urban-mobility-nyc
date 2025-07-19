@@ -1,11 +1,11 @@
-# 🚕 Urban Mobility & Socioeconomic Analysis: NYC Taxi vs. Uber
+# Urban Mobility & Socioeconomic Analysis: NYC Taxi vs. Uber
 
 
 Analyze how income, property value, and population density impact the choice between Yellow Taxi and Uber rides across Manhattan.  Built with **Apache Spark**, **Snowflake**, and **Power BI**.
 
 ---
 
-## 🔥 Stages
+## Stages
 
 | Stage         | Highlights                                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -18,7 +18,7 @@ Analyze how income, property value, and population density impact the choice bet
 
 ---
 
-## 🗂️ Repository Layout
+## Repository Layout
 
 ```
 ├── data/
@@ -41,7 +41,7 @@ Analyze how income, property value, and population density impact the choice bet
 
 ---
 
-## ⚙️ Local Spark Setup
+## Local Spark Setup
 
 ### Python
 
@@ -84,7 +84,7 @@ Download: [https://github.com/cdarlint/winutils/tree/master/hadoop-3.3.6/bin](ht
 
 ---
 
-## ⚡ Quick Start
+## Quick Start
 
 ```bash
 # 1. Create & activate venv
@@ -95,11 +95,5 @@ pip install -r requirements.txt
 # 2. Set your Snowflake credentials
 cp .env .env  # then fill values
 ```
-
----
-
-## 📊 Dashboards Preview
-
-
 
 ---
