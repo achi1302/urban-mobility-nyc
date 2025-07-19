@@ -1,7 +1,7 @@
 # 🚕 Urban Mobility & Socioeconomic Analysis: NYC Taxi vs. Uber
 
 
-Analyze how income, property value, and population density impact the choice between Yellow Taxi and Uber rides across Manhattan (2009‑present).  Built with **Apache Spark**, **Snowflake**, and **Power BI**.
+Analyze how income, property value, and population density impact the choice between Yellow Taxi and Uber rides across Manhattan.  Built with **Apache Spark**, **Snowflake**, and **Power BI**.
 
 ---
 
