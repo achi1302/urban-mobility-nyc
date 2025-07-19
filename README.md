@@ -9,10 +9,10 @@ Analyze how income, property value, and population density impact the choice bet
 
 | Stage         | Highlights                                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ingest**    | • Downloads monthly TLC Parquet files• Handles Yellow Taxi (`yellow_tripdata_YYYY‑MM.parquet`) & High‑Volume FHV (`fhvhv_tripdata_YYYY‑MM.parquet`) |
-| **Clean**     | • Drops bad rows, normalizes schemas, decodes `payment_type`• Geo‑join with TLC Taxi Zones shapefile                                                |
-| **Transform** | • Classifies every trip into **Lower / Midtown / Upper Manhattan**• Adds PU⇢DO regions & fare per‑mile metrics                                      |
-| **Aggregate** | • Generates BI‑ready tables:                                                                                                                        |
+| **Ingest**    | • Downloads monthly TLC Parquet files • Handles Yellow Taxi (`yellow_tripdata_YYYY‑MM.parquet`) & High‑Volume FHV (`fhvhv_tripdata_YYYY‑MM.parquet`)|
+| **Clean**     | • Drops bad rows, normalizes schemas, decodes `payment_type` • Geo‑join with TLC Taxi Zones shapefile                                               |
+| **Transform** | • Classifies every trip into **Zones and Regions**                                                                                                  |
+| **Aggregate** | • Generates BI‑ready tables                                                                                                                         |
 | **Load**      | • Writes summaries to Snowflake (`NYC_MOBILITY` DB) via Spark connector                                                                             |
 | **Visualize** | • Power BI dashboards                                                                                                                               |
 
