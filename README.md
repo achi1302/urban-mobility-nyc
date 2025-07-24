@@ -9,9 +9,10 @@ Analyze how income, property value, and population density impact the choice bet
 
 | Stage         | Highlights                                                                                                                                          |
 | ------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Ingest**    | • Downloads monthly TLC Parquet files • Handles Yellow Taxi (`yellow_tripdata_YYYY‑MM.parquet`) & High‑Volume FHV (`fhvhv_tripdata_YYYY‑MM.parquet`)|
-| **Clean**     | • Drops bad rows, normalizes schemas, decodes `payment_type` • Geo‑join with TLC Taxi Zones shapefile                                               |
-| **Transform** | • Classifies every trip into **Zones and Regions**                                                                                                  |
+| **Ingest**    | • Converts monthly TLC parquet files to yearly files • Handles Yellow Taxi (`yellow_tripdata_YYYY‑MM.parquet`) & High‑Volume FHV (`fhvhv_tripdata_YYYY‑MM.parquet`)|
+| **Join**      | • Joins yearly Taxi and Uber data with Taxi Zones                                                                                                   |
+| **Clean**     | • Drops bad rows, normalizes schemas                                                                                                                |
+| **Transform** | • Classifies every trip into **Zones and Regions** • Geo‑join with TLC Taxi Zones shapefile                                                         |
 | **Aggregate** | • Generates BI‑ready tables                                                                                                                         |
 | **Load**      | • Writes summaries to Snowflake (`NYC_MOBILITY` DB) via Spark connector                                                                             |
 | **Visualize** | • Power BI dashboards                                                                                                                               |
@@ -22,15 +23,15 @@ Analyze how income, property value, and population density impact the choice bet
 
 ```
 ├── data/
-│   ├── raw/                # Monthly parquet from TLC & FHV
-│   ├── cleaned/            # yearly Parquet TLC & FHV
+│   ├── raw/                # Monthly to Yearly parquet from TLC
+│   ├── cleaned/            # Yearly parquet processing
 │   ├── external/           # Taxi zones shp, Census CSVs
 │   ├── outputs/            # BI ready local exports
 ├── scripts/
 │   ├── census/             # Manual census data generation  
 │   ├── exploration/        # Exploration of created scripts
 │   ├── taxi/               # Taxi data processing
-│   ├── transform/          # Join taxi with Uber data and filter Manhattan zones and regions
+│   ├── transform/          # Join taxi with Uber data and Filter Manhattan zones and regions
 │   ├── uber/               # Uber data processing
 │   └── load_to_snowflake.py                     
 ├── .env                    # Snowflake creds template
