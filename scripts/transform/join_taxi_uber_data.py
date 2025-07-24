@@ -17,7 +17,7 @@ spark = SparkSession.builder \
     .getOrCreate()
 
 YEAR = "2023" #Change Year
-OUTPUT_PATH = f"data/cleaned/{YEAR}/taxi_uber_tripdata_{YEAR}.parquet"
+OUTPUT_PATH = f"data/cleaned/{YEAR}/taxi_uber_joined_tripdata_{YEAR}.parquet"
 
 # Taxi
 taxi_df = spark.read.parquet(f"data/cleaned/{YEAR}/taxi/yellowtaxi_tripdata_ultimate_{YEAR}.parquet") \

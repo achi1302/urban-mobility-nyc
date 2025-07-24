@@ -76,7 +76,7 @@ def map_zone_to_lon(zone):
     return zone_lon_map_bc.value.get(zone, None)
 
 # READ AND TRANSFORM
-df_taxi_uber = spark.read.parquet(f"data/cleaned/{YEAR}/taxi_uber_tripdata_{YEAR}.parquet")
+df_taxi_uber = spark.read.parquet(f"data/cleaned/{YEAR}/taxi_uber_joined_tripdata_{YEAR}.parquet")
 target_neighborhoods = list(zone_region_map.keys())
 
 df_taxi_uber = df_taxi_uber.filter(
